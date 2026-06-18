@@ -4,7 +4,7 @@ metadata:
   name: image-signature-policy
 spec:
   images:
-    - glob: "index.docker.io/your-username/myapp:*" # Khớp với image pattern của bạn
+    - glob: "ghcr.io/minhquang0104/w10-api:*" # Khớp với image pattern của bạn
   authorities:
     - key:
         data: |
