@@ -18,3 +18,14 @@ spec:
     automated:
       prune: true
       selfHeal: true
+  ignoreDifferences:
+      - group: admissionregistration.k8s.io
+        kind: MutatingWebhookConfiguration
+        name: policy.sigstore.dev
+        jsonPointers:
+          - /webhooks/0/namespaceSelector/matchExpressions
+      - group: admissionregistration.k8s.io
+        kind: ValidatingWebhookConfiguration
+        name: policy.sigstore.dev
+        jsonPointers:
+          - /webhooks/0/namespaceSelector/matchExpressions
