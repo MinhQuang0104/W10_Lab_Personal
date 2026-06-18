@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: eso-configuration
+  namespace: argocd
+  annotations:
+    # Chạy sau khi Wave -1 đã hoàn thành hoàn toàn và ở trạng thái Healthy
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/MinhQuang0104/W10_Lab_Personal # Thay link repo fork của bạn
+    targetRevision: main # Hoặc branch bạn đang làm bài
+    path: eso # Đường dẫn đến thư mục chứa các file yaml cấu hình ESO
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: demo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

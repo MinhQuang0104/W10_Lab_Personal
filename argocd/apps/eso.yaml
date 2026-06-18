@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-secrets-operator
+  namespace: argocd
+  annotations:
+    # Wave âm (-) sẽ được chạy trước
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  project: default
+  source:
+    chart: external-secrets
+    repoURL: https://charts.external-secrets.io
+    targetRevision: 0.9.11 # Hoặc version stable bất kỳ bạn đang dùng
+    helm:
+      parameters:
+        - name: installCRDs
+          value: "true" # BẮT BUỘC phải bật để tự động cài đặt CRD
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: demo # Hoặc namespace hệ thống như kube-system tùy bài lab
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    createNamespace: true
