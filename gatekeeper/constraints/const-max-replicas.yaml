@@ -2,6 +2,8 @@ apiVersion: constraints.gatekeeper.sh/v1beta1
 kind: K8sMaxReplicas
 metadata:
   name: deployment-max-5-replicas
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   enforcementAction: deny # Từ chối manifest ngay lập tức nếu vi phạm
   match:
