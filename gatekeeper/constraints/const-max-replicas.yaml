@@ -1,0 +1,12 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sMaxReplicas
+metadata:
+  name: deployment-max-5-replicas
+spec:
+  enforcementAction: deny # Từ chối manifest ngay lập tức nếu vi phạm
+  match:
+    kinds:
+      - apiGroups: ["apps"]
+        kinds: ["Deployment"]
+  parameters:
+    max: 5 # Cấu hình số lượng replicas tối đa theo đề bài
