@@ -8,7 +8,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/MinhQuang0104/W10_Lab
+    repoURL: https://github.com/MinhQuang0104/W10_Lab_Personal
     path: argocd/apps
     targetRevision: main
   destination:
