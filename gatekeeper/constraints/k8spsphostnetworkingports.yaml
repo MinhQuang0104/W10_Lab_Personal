@@ -2,6 +2,8 @@ apiVersion: constraints.gatekeeper.sh/v1beta1
 kind: K8sPSPHostNetworkingPorts
 metadata:
   name: block-host-network
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   enforcementAction: warn
   match:

@@ -1,0 +1,172 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8sallowedrepos
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sAllowedRepos
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            repos:
+              type: array
+              items:
+                type: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sallowedrepos
+
+        violation[{"msg": msg}] {
+          container := input_containers[_]
+          not image_allowed(container.image)
+          msg := sprintf("container <%v> uses disallowed image <%v>", [container.name, container.image])
+        }
+
+        image_allowed(image) {
+          pattern := input.parameters.repos[_]
+          regex.match(pattern, image)
+        }
+
+        input_containers[c] {
+          c := input.review.object.spec.containers[_]
+        }
+
+        input_containers[c] {
+          c := input.review.object.spec.initContainers[_]
+        }
+
+        input_containers[c] {
+          c := input.review.object.spec.ephemeralContainers[_]
+        }
+---
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8srequiredresources
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRequiredResources
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            requiredFiles:
+              type: array
+              items:
+                type: string
+            resources:
+              type: array
+              items:
+                type: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8srequiredresources
+
+        violation[{"msg": msg}] {
+          container := input_containers[_]
+          field := input.parameters.requiredFiles[_]
+          resource := input.parameters.resources[_]
+          not container.resources[field][resource]
+          msg := sprintf("container <%v> is missing resources.%v.%v", [container.name, field, resource])
+        }
+
+        input_containers[c] {
+          c := input.review.object.spec.containers[_]
+        }
+
+        input_containers[c] {
+          c := input.review.object.spec.initContainers[_]
+        }
+---
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8spspallowedusers
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sPSPAllowedUsers
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            runAsUser:
+              type: object
+              properties:
+                rule:
+                  type: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8spspallowedusers
+
+        violation[{"msg": msg}] {
+          input.parameters.runAsUser.rule == "MustRunAsNonRoot"
+          container := input_containers[_]
+          not runs_as_non_root(container)
+          msg := sprintf("container <%v> must run as non-root", [container.name])
+        }
+
+        runs_as_non_root(container) {
+          container.securityContext.runAsNonRoot == true
+        }
+
+        runs_as_non_root(container) {
+          container.securityContext.runAsUser > 0
+        }
+
+        runs_as_non_root(container) {
+          not container.securityContext.runAsNonRoot
+          not container.securityContext.runAsUser
+          input.review.object.spec.securityContext.runAsNonRoot == true
+        }
+
+        input_containers[c] {
+          c := input.review.object.spec.containers[_]
+        }
+
+        input_containers[c] {
+          c := input.review.object.spec.initContainers[_]
+        }
+---
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8spsphostnetworkingports
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sPSPHostNetworkingPorts
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            hostNetwork:
+              type: boolean
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8spsphostnetworkingports
+
+        violation[{"msg": msg}] {
+          input.parameters.hostNetwork == false
+          input.review.object.spec.hostNetwork == true
+          msg := sprintf("pod <%v> must not use hostNetwork", [input.review.object.metadata.name])
+        }

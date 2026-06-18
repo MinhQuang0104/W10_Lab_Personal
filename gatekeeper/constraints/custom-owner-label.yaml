@@ -2,6 +2,8 @@ apiVersion: templates.gatekeeper.sh/v1
 kind: ConstraintTemplate
 metadata:
   name: k8srequiredlabels
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
 spec:
   crd:
     spec:
@@ -31,6 +33,8 @@ apiVersion: constraints.gatekeeper.sh/v1beta1
 kind: K8sRequiredLabels
 metadata:
   name: pods-must-have-owner
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   enforcementAction: warn
   match:
