@@ -5,7 +5,7 @@ metadata:
   namespace: demo
   name: developer-role
 rules:
-- apiGroups: ["", "apps", "networking.k8s.io"]
+- apiGroups: ["", "apps", "networking.k8s.io"] # Cách viết gộp các path
   resources: ["pods", "deployments", "services", "ingresses"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ---

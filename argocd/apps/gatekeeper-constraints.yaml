@@ -9,11 +9,11 @@ metadata:
 spec:
   project: default
   source:
-    # Đường dẫn tới Repo GitHub của bạn
     repoURL: 'https://github.com/MinhQuang0104/W10_Lab_Personal.git'
     targetRevision: main
-    # Thư mục chứa các file policy/constraint mà bạn viết ở Bước 2 & 3
-    path: gatekeeper/constraints
+    path: gatekeeper
+    directory:
+      recurse: true
   destination:
     server: 'https://kubernetes.default.svc'
     # Các Constraint thuộc scope toàn cụm nên để namespace default/gateway đều được

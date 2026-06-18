@@ -1,0 +1,53 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8spspallowedusers
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sPSPAllowedUsers
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            runAsUser:
+              type: object
+              properties:
+                rule:
+                  type: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8spspallowedusers
+
+        violation[{"msg": msg}] {
+          input.parameters.runAsUser.rule == "MustRunAsNonRoot"
+          container := input_containers[_]
+          not runs_as_non_root(container)
+          msg := sprintf("container <%v> must run as non-root", [container.name])
+        }
+
+        runs_as_non_root(container) {
+          container.securityContext.runAsNonRoot == true
+        }
+
+        runs_as_non_root(container) {
+          container.securityContext.runAsUser > 0
+        }
+
+        runs_as_non_root(container) {
+          not container.securityContext.runAsNonRoot
+          not container.securityContext.runAsUser
+          input.review.object.spec.securityContext.runAsNonRoot == true
+        }
+
+        input_containers[c] {
+          c := input.review.object.spec.containers[_]
+        }
+
+        input_containers[c] {
+          c := input.review.object.spec.initContainers[_]
+        }

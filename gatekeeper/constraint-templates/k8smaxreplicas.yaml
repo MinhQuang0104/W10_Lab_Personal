@@ -21,18 +21,9 @@ spec:
         package k8smaxreplicas
 
         violation[{"msg": msg}] {
-          # Kiểm tra xem tài nguyên được tạo có phải là Deployment không
           input.review.kind.kind == "Deployment"
-          
-          # Lấy số lượng replicas từ manifest người dùng truyền vào
           replicas := input.review.object.spec.replicas
-          
-          # Lấy tham số tối đa (max) được cấu hình từ Constraint
           max_allowed := input.parameters.max
-          
-          # Nếu số replicas lớn hơn số lượng cho phép -> Kích hoạt vi phạm
           replicas > max_allowed
-          
-          # Thông báo lỗi trả về cho người dùng
-          msg := sprintf("Số lượng replicas (%v) vượt quá giới hạn cho phép tối đa là %v", [replicas, max_allowed])
+          msg := sprintf("replicas (%v) exceeds the maximum allowed value of %v", [replicas, max_allowed])
         }

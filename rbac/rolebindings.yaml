@@ -4,11 +4,11 @@ kind: RoleBinding
 metadata:
   name: alice-developer-binding
   namespace: demo
-subjects:
+subjects: # Khối này định nghĩa 1 người hay nhóm người được trao quyền
 - kind: User
   name: alice
   apiGroup: rbac.authorization.k8s.io
-roleRef:
+roleRef: # Gán role cho cái subject nhóm người /người trên
   kind: Role
   name: developer-role
   apiGroup: rbac.authorization.k8s.io
