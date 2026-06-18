@@ -23,4 +23,4 @@ spec:
     automated:
       prune: true
       selfHeal: true
-    createNamespace: true
+    # createNamespace: true
