@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cluster-policies
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/MinhQuang0104/W10_Lab_Personal
+    targetRevision: main
+    path: policies # Trỏ tới thư mục chứa ClusterImagePolicy
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

@@ -1,0 +1,14 @@
+apiVersion: policy.sigstore.dev/v1alpha1
+kind: ClusterImagePolicy
+metadata:
+  name: image-signature-policy
+spec:
+  images:
+    - glob: "index.docker.io/your-username/myapp:*" # Khớp với image pattern của bạn
+  authorities:
+    - key:
+        data: |
+          -----BEGIN PUBLIC KEY-----
+          MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAExzm/tWBlwrthCWaEFeqo2Q6Jb3OM
+          7iKy4pIW5i4tBRtGjZRoEsxJnAOGX2C0OnMRZpH63YUC2rAcCN+wFXUnIQ==
+          -----END PUBLIC KEY-----

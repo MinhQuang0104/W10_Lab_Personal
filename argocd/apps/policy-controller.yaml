@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: policy-controller
+  namespace: argocd
+spec:
+  project: default
+  source:
+    chart: policy-controller
+    repoURL: https://sigstore.github.io/helm-charts
+    targetRevision: 0.x.x # Kiểm tra phiên bản mới nhất phù hợp
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cosign-system # Thường cài vào namespace riêng biệt
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    createNamespace: true
