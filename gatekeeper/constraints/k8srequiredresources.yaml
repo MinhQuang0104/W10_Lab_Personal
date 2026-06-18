@@ -11,8 +11,6 @@ spec:
       - apiGroups: [""]
         kinds: ["Pod"]
   parameters:
-    apiGroups: [""]
-    kinds: ["Pod"]
     requiredFiles:
       - limits
     resources:
