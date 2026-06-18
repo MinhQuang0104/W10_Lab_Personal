@@ -1,0 +1,13 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sAllowedRepos
+metadata:
+  name: block-latest-tag
+spec:
+  enforcementAction: warn
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+  parameters:
+    # Cấu hình chặn hậu tố ':latest' hoặc không ghi tag (mặc định hiểu là latest)
+    repos: ["^.+:(?!latest$)[^:]+$"]

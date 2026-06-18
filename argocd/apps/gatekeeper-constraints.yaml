@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gatekeeper-constraints
+  namespace: argocd
+  annotations:
+    # Chạy ở Wave 1: Sau khi cài Controller (Wave 0) và cùng lúc với RBAC
+    argocd.argoproj.io/sync-wave: "1" 
+spec:
+  project: default
+  source:
+    # Đường dẫn tới Repo GitHub của bạn
+    repoURL: 'https://github.com/MinhQuang0104/W10_Lab.git'
+    targetRevision: HEAD
+    # Thư mục chứa các file policy/constraint mà bạn viết ở Bước 2 & 3
+    path: gatekeeper/constraints
+  destination:
+    server: 'https://kubernetes.default.svc'
+    # Các Constraint thuộc scope toàn cụm nên để namespace default/gateway đều được
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
