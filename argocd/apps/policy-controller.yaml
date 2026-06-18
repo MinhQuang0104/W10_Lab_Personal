@@ -8,14 +8,20 @@ spec:
   source:
     chart: policy-controller
     repoURL: https://sigstore.github.io/helm-charts
-    targetRevision: 0.x.x # Kiểm tra phiên bản mới nhất phù hợp
+    targetRevision: 0.13.0
+    values: |
+      webhookConfig:
+        objectSelector:
+          matchExpressions:
+            - key: policy.sigstore.dev/include
+              operator: In
+              values: ["true"]
   destination:
     server: https://kubernetes.default.svc
-    namespace: cosign-system # Thường cài vào namespace riêng biệt
+    namespace: cosign-system
   syncPolicy:
     syncOptions:
-    - CreateNamespace=true
+      - CreateNamespace=true
     automated:
       prune: true
       selfHeal: true
-    createNamespace: true
