@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pod-valid
+  namespace: default
+spec:
+  securityContext:
+    runAsUser: 1000 # Chạy với tư cách non-root user (UID 1000)
+  containers:
+  - name: nginx
+    image: nginx:1.25.1 # Version cụ thể (Version pinned)
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "100m"
+      limits:          # Có khai báo limits đầy đủ
+        memory: "128Mi"
+        cpu: "200m"

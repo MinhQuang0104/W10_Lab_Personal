@@ -10,7 +10,7 @@ spec:
       names:
         kind: K8sMaxReplicas
       validation:
-        openAPIV3Schema:
+        openAPIV3Schema: # Định nghĩa các dữ liệu được truyền vào template, tên biến, data type
           type: object
           properties:
             max:

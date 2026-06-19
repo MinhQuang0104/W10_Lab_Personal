@@ -1,4 +1,8 @@
 # Build and push Docker image to GitHub Container Registry
+# ⚠️ REQUIREMENTS: 
+#   - Cluster cần cài Sigstore Policy Controller (argocd/apps/policy-controller.yaml)
+#   - Cần apply ClusterImagePolicy (argocd/apps/policies.yaml) 
+#   - Public key (cosign.pub) commit trong signing/ folder
 name: Build and Push Image
 
 on:
@@ -77,10 +81,17 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@v4
 
+      - name: Verify signed image integrity
+        run: |
+          cosign verify --key ./signing/cosign.pub ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.semver.outputs.version }} \
+            | jq '.'
+        working-directory: ${{ github.workspace }}
+
       - name: Sign Docker Image
         run: |
           echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
           cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.semver.outputs.version }}
+          rm -f cosign.key  # 🔒 Xóa private key sau ký để bảo mật
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
 
