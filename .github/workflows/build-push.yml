@@ -23,6 +23,7 @@ jobs:
     permissions:
       contents: write
       packages: write
+      security-events: write  # ✅ Cần thiết để upload SARIF
 
     steps:
       - name: Checkout repository
@@ -79,12 +80,15 @@ jobs:
           exit-code: '0'  # ⚠️ Chỉ report, không block workflow
           format: 'sarif'
           output: 'trivy-results.sarif'
+        continue-on-error: true
 
       - name: Upload Trivy scan results
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        if: always() && hashFiles('trivy-results.sarif') != ''
         with:
           sarif_file: 'trivy-results.sarif'
+          wait-for-processing: true
+        continue-on-error: true
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3
