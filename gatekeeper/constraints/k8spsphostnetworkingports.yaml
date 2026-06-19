@@ -5,10 +5,11 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  enforcementAction: warn
+  enforcementAction: deny
   match:
     kinds:
       - apiGroups: [""]
         kinds: ["Pod"]
   parameters:
-    hostNetwork: false
+    hostNetwork: false # Pod KHÔNG được phép dùng host network, nếu đặt true thì pod có thể truy cập mạng của host 
+

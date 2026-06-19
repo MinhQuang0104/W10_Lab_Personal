@@ -5,14 +5,12 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  enforcementAction: warn
+  enforcementAction: deny
   match:
     kinds:
       - apiGroups: [""]
         kinds: ["Pod"]
   parameters:
-    requiredFiles:
-      - limits
-    resources:
+    limits:
       - cpu
       - memory

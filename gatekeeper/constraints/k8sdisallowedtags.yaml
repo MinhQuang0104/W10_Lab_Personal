@@ -1,14 +1,16 @@
 apiVersion: constraints.gatekeeper.sh/v1beta1
-kind: K8sRequiredLabels
+kind: K8sDisallowedTags
 metadata:
-  name: pods-must-have-owner
+  name: block-latest-tag
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  enforcementAction: warn
+  enforcementAction: deny
   match:
     kinds:
       - apiGroups: [""]
-        kinds: ["Pod"]
+        kinds: ["Pod"] # Chặn những resource Pod có tag lastest
   parameters:
-    labels: ["owner"]
+    tags:
+      - latest
+
