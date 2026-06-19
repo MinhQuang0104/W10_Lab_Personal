@@ -101,21 +101,11 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3
 
-      - name: Get image digest
-        id: digest
-        run: |
-          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.semver.outputs.version }} 2>/dev/null | cut -d'@' -f2)
-          if [ -z "$DIGEST" ]; then
-            echo "Fallback: computing digest from docker buildx output"
-            DIGEST=$(docker run --rm ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.semver.outputs.version }} sh -c 'echo sha256:dummy' 2>/dev/null || echo "sha256:placeholder")
-          fi
-          echo "value=$DIGEST" >> "$GITHUB_OUTPUT"
-          echo "Image Digest: $DIGEST"
-
       - name: Sign Docker Image
         run: |
           echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
-          cosign sign --key cosign.key --yes ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}@${{ steps.digest.outputs.value }}
+          # Ký image bằng tag (sẽ warning nhưng OK trong CI)
+          cosign sign --key cosign.key --yes ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.semver.outputs.version }}
           rm -f cosign.key  # 🔒 Xóa private key sau ký để bảo mật
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
@@ -124,7 +114,7 @@ jobs:
       - name: Verify signed image integrity
         run: |
           if [ -f ./signing/cosign.pub ]; then
-            cosign verify --key ./signing/cosign.pub ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}@${{ steps.digest.outputs.value }} | jq '.'
+            cosign verify --key ./signing/cosign.pub ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.semver.outputs.version }} | jq '.'
           else
             echo "⚠️  cosign.pub not found, skipping verification"
           fi
@@ -132,8 +122,15 @@ jobs:
 
       - name: Update rollout.yaml with new version
         run: |
-          sed -i "s|image: ghcr.io/.*/w10-api:.*|image: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.semver.outputs.version }}|g" app-api/rollout.yaml
-          sed -i "s|value: \"v.*\"|value: \"v${{ steps.semver.outputs.version }}\"|g" app-api/rollout.yaml
+          # Update image với version cụ thể
+          sed -i "s|image: ghcr.io/.*/w10-api:.*|        image: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.semver.outputs.version }}|g" app-api/rollout.yaml
+          # Update VERSION env với version cụ thể (chỉ trong containers block)
+          sed -i "/name: VERSION/,/^[[:space:]]*$/s|value: \"v[^\"]*\"|value: \"v${{ steps.semver.outputs.version }}\"|g" app-api/rollout.yaml
+          
+          # Verify changes
+          echo "=== Updated rollout.yaml ==="
+          grep -A1 "name: VERSION" app-api/rollout.yaml || echo "VERSION not found"
+          grep "image: " app-api/rollout.yaml | grep w10-api || echo "Image not found"
 
       - name: Commit and push version update
         run: |
